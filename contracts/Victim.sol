@@ -33,9 +33,8 @@ contract Victim {
         balances[msg.sender] += providedSupply;
     }
 
+    // add reentrancyProtected modifier to protect
     function withdraw() public {
-        require(!_lock);
-        _lock = true;
         address sender = msg.sender;
         uint256 amount = balances[sender];
         (bool sent,) = sender.call{value : amount}("");
@@ -43,5 +42,11 @@ contract Victim {
             revert VictimBadWithdrawal(sender, amount);
         }
         balances[msg.sender] = 0;
+    }
+
+    modifier reentrancyProtected() {
+        require(!_lock);
+        _lock = true;
+        _;
     }
 }

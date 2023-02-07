@@ -7,6 +7,7 @@ describe("Reentrancy attack", () => {
 
     let victim: Victim;
     let attacker: Attacker;
+    const initialSupply = ethers.utils.parseEther("10")
 
     before(async () => {
         victim = await (await ethers.getContractFactory("Victim")).deploy();
@@ -15,7 +16,7 @@ describe("Reentrancy attack", () => {
 
     it("should perform an initial supply", async () => {
         await victim.provideInitialSupply({
-            value: ethers.utils.parseEther("10")
+            value: initialSupply
         });
     });
 
@@ -27,9 +28,9 @@ describe("Reentrancy attack", () => {
 
     it("attacker should perform an attack", async () => {
         const attackerBalanceBefore = await ethers.provider.getBalance(attacker.address);
+        expect(attackerBalanceBefore).eq(0);
         await attacker.attack();
         const attackerBalanceAfter = await ethers.provider.getBalance(attacker.address);
-        expect(attackerBalanceAfter).greaterThan(attackerBalanceBefore);
-        console.log(ethers.utils.formatEther(attackerBalanceAfter));
+        expect(attackerBalanceAfter).eq(initialSupply);
     });
 });
